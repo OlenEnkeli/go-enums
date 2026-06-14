@@ -1,0 +1,73 @@
+version: "3"
+
+# Task names use kebab-case per the Taskfile style guide:
+# https://taskfile.dev/styleguide/
+vars:
+  GOLANGCI_VERSION: "v2.12.1"
+
+tasks:
+  default:
+    desc: "List available tasks"
+    cmds:
+      - task --list
+    silent: true
+
+  init:
+    desc: "Install pinned dev tooling (golangci-lint) and tidy modules"
+    cmds:
+      - go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{.GOLANGCI_VERSION}}
+      - go mod tidy
+
+  tidy:
+    desc: "Tidy go.mod / go.sum"
+    cmds:
+      - go mod tidy
+
+  fmt:
+    desc: "Auto-format the code (gofmt, gofumpt, goimports)"
+    cmds:
+      - golangci-lint fmt ./...
+
+  vet:
+    desc: "Run go vet"
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: "Standard linting (format check, go vet) + golangci-lint"
+    cmds:
+      # Standard linting: formatting must be clean, then go vet.
+      - golangci-lint fmt --diff ./...
+      - go vet ./...
+      # Full golangci-lint suite (varnamelen, wsl_v5, revive, ...).
+      - golangci-lint run ./...
+
+  test:
+    desc: "Run tests with the race detector and coverage summary"
+    cmds:
+      - go test -race -cover ./...
+
+  cover:
+    desc: "Generate a coverage profile and print the per-function report"
+    cmds:
+      - go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      - go tool cover -func=coverage.out
+
+  build:
+    desc: "Build all packages"
+    cmds:
+      - go build ./...
+
+  run-examples:
+    desc: "Run the StrictEnum (string/int) and AutoEnum example programs"
+    cmds:
+      - go run ./examples/strictenum
+      - go run ./examples/intenum
+      - go run ./examples/autoenum
+
+  check:
+    desc: "Full gate: lint + tests + build (run this every iteration)"
+    cmds:
+      - task: lint
+      - task: test
+      - task: build

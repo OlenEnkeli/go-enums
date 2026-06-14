@@ -1,0 +1,41 @@
+# golangci-lint v2 configuration for go-enums.
+#
+# Curated set: the golangci-lint "standard" defaults plus hand-picked linters.
+# Two linters are kept on purpose to enforce project style rules:
+#   - varnamelen (check-receiver/check-range) — no single-letter names, even receivers;
+#   - wsl_v5 — blank lines that visually separate logical blocks.
+version: "2"
+
+linters:
+  default: standard # errcheck, govet, ineffassign, staticcheck, unused
+
+  enable:
+    - varnamelen      # forbid short, non-descriptive names (incl. receivers)
+    - wsl_v5          # consistent blank lines around blocks
+    - revive          # general best-practice rules (golint successor)
+    - gocritic        # bug/performance/style diagnostics
+    - misspell        # typos in comments and strings
+    - unconvert       # redundant type conversions
+    - unparam         # unused function parameters
+    - errorlint       # correct error wrapping/comparison (errors.Is, %w)
+    - errname         # sentinel errors must be named ErrXxx
+    - nakedret        # no naked returns
+    - predeclared     # do not shadow predeclared identifiers
+    - gochecknoinits  # no init() functions
+
+  settings:
+    varnamelen:
+      # Type parameters (T) keep idiomatic single-letter names; varnamelen does
+      # not check them. The rule targets variables and receivers.
+      min-name-length: 2
+      check-receiver: true
+      check-range: true
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+
+run:
+  go: "1.24"
